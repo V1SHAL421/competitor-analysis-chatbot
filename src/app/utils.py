@@ -1,44 +1,14 @@
 import logging
 import os
 from langchain_core.tools import tool
-from models import llm_fast, llm_smart
+from models import CompetitorSummary, StrategicAnalysis, AgentResponse
+from constants import llm_fast, llm_smart
 from tavily import TavilyClient
 from firecrawl import Firecrawl
-from pydantic import BaseModel
 from typing import List, Dict
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-class CompetitorSummary(BaseModel):
-    name: str
-    website_url: str
-    company_description: str
-    key_features: List[str]
-    pricing_model: str
-    target_market: str
-    strengths: List[str]
-    weaknesses: List[str]
-    unique_value_proposition: str
-    technology_stack: List[str]
-    market_position: str
-    next_steps: List[str]
-
-class StrategicAnalysis(BaseModel):
-    market_positioning: str
-    competitive_advantages: List[str]
-    areas_of_overlap: List[str]
-    gaps_and_opportunities: List[str]
-    recommended_differentiators: List[str]
-    go_to_market_strategy: str
-    threat_assessment: str
-    market_size_insights: str
-
-class AgentResponse(BaseModel):
-    """Response model for the agent"""
-    competitor_summaries: List[CompetitorSummary]
-    comparison_matrix: List[Dict[str, str]]
-    strategic_analysis: StrategicAnalysis
 
 @tool
 def analyse_competitors(industry: str, product_summary: str) -> str:
@@ -51,7 +21,7 @@ def analyse_competitors(industry: str, product_summary: str) -> str:
     Returns:
         Analysis results of competitors in the specified industry
     """
-    logger.info(f"Analszing competitors for industry: {industry}")
+    logger.info(f"Analysing competitors for industry: {industry}")
     logger.info(f"Product summary: {product_summary}")
 
     try:
@@ -82,8 +52,29 @@ def analyse_competitors(industry: str, product_summary: str) -> str:
             except Exception as e:
                 logger.warning(f"Failed to scrape {url}: {e}")
         
-        # Use LLM to analyse competitors
-        analysis_prompt = f"""
+        analysis_prompt = create_prompt(industry, product_summary, competitor_data)
+        
+        structured_llm = llm_smart.with_structured_output(AgentResponse)
+        analysis = structured_llm.invoke(analysis_prompt)
+        return analysis.model_dump_json()
+        
+    except Exception as e:
+        logger.error(f"Analysis failed: {e}")
+        return f"Failed to analyse competitors: {str(e)}"
+    
+def create_prompt(industry: str, product_summary: str, competitor_data: List[Dict]):
+    """Create the prompt for competitor analysis.
+    
+    Args:
+        industry (str): The industry or category (e.g., 'AI coding assistants')
+        product_summary (str): Brief description of the product (max 300 chars)
+        competitor_data (list): List of competitor URLs and its respective content
+    
+    Returns:
+        Prompt to send to the LLM
+    """
+
+    analysis_prompt = f"""
         You are an expert in competitive intelligence, product analysis, and strategic positioning.
 
         Your task is to analyse competitors based strictly on the information provided.  
@@ -149,12 +140,4 @@ def analyse_competitors(industry: str, product_summary: str) -> str:
         
         Only use information explicitly found in the competitor data.
         """
-        
-        structured_llm = llm_smart.with_structured_output(AgentResponse)
-        analysis = structured_llm.invoke(analysis_prompt)
-        return analysis.model_dump_json()
-        
-    except Exception as e:
-        logger.error(f"Analysis failed: {e}")
-        return f"Failed to analyse competitors: {str(e)}"
-    
+    return analysis_prompt

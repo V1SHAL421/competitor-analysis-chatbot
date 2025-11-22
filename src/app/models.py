@@ -1,18 +1,34 @@
-import os
-from langchain_groq import ChatGroq
+from pydantic import BaseModel
+from typing import List, Dict
 
-# Fast model (Llama 3.1 8B Instant)
-llm_fast = ChatGroq(
-    model_name="llama-3.1-8b-instant",
-    temperature=0.2,
-    max_tokens=2048,
-    api_key=os.getenv("GROQ_API_KEY")
-)
+class CompetitorSummary(BaseModel):
+    """Summary of the competitors retrieved"""
+    name: str
+    website_url: str
+    company_description: str
+    key_features: List[str]
+    pricing_model: str
+    target_market: str
+    strengths: List[str]
+    weaknesses: List[str]
+    unique_value_proposition: str
+    technology_stack: List[str]
+    market_position: str
+    next_steps: List[str]
 
-# High-quality model (Llama 3.3 70B Versatile)
-llm_smart = ChatGroq(
-    model_name="llama-3.3-70b-versatile",
-    temperature=0.2,
-    max_tokens=4096,
-    api_key=os.getenv("GROQ_API_KEY")
-)
+class StrategicAnalysis(BaseModel):
+    """Strategic analysis of startup vs competing startups"""
+    market_positioning: str
+    competitive_advantages: List[str]
+    areas_of_overlap: List[str]
+    gaps_and_opportunities: List[str]
+    recommended_differentiators: List[str]
+    go_to_market_strategy: str
+    threat_assessment: str
+    market_size_insights: str
+
+class AgentResponse(BaseModel):
+    """Response model for the agent"""
+    competitor_summaries: List[CompetitorSummary]
+    comparison_matrix: List[Dict[str, str]]
+    strategic_analysis: StrategicAnalysis

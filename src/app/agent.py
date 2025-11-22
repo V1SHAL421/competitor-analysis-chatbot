@@ -1,7 +1,7 @@
 from langgraph.graph import StateGraph, END
 from langchain_core.messages import HumanMessage
 from typing import TypedDict, List
-from models import llm_smart
+from constants import llm_smart
 from utils import analyse_competitors
 
 class AgentState(TypedDict):
