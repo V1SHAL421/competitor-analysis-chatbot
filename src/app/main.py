@@ -1,5 +1,6 @@
 import streamlit as st
 from constants import categories
+from utils import analyse_competitors
 
 st.title("Competitor Analyser")
 
@@ -28,4 +29,5 @@ if st.button(
     disabled=not (industry and product_summary and len(product_summary.strip()) > 0)
 ):
     st.success("Starting competitor analysis...")
+    analyse_competitors(industry, product_summary)
     
