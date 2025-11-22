@@ -68,6 +68,7 @@ if st.button(
         st.write(f"**Go-to-Market Strategy:** {strategic.get('go_to_market_strategy', 'Not provided')}")
         st.write(f"**Threat Assessment:** {strategic.get('threat_assessment', 'Not provided')}")
         st.write(f"**Market Size Insights:** {strategic.get('market_size_insights', 'Not provided')}")
+        st.write(f"**Next Steps:** {strategic.get('next_steps', 'Not provided')}")
         
     except json.JSONDecodeError:
         st.write(result)

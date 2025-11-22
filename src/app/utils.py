@@ -22,6 +22,7 @@ class CompetitorSummary(BaseModel):
     unique_value_proposition: str
     technology_stack: List[str]
     market_position: str
+    next_steps: List[str]
 
 class StrategicAnalysis(BaseModel):
     market_positioning: str
@@ -134,6 +135,7 @@ def analyse_competitors(industry: str, product_summary: str) -> str:
         - Market size and growth insights
         - Customer acquisition and retention strategies
         - Partnership and integration opportunities
+        - Strategic Next Steps
 
         --------------------
         OUTPUT REQUIREMENTS
