@@ -20,3 +20,12 @@ product_summary = st.text_area(
     help="Keep it under 300 characters"
 )
 
+# Analyse button to trigger agentic workflow
+if st.button(
+    "🔍 Analyse Competitors", 
+    type="primary", 
+    use_container_width=True,
+    disabled=not (industry and product_summary and len(product_summary.strip()) > 0)
+):
+    st.success("Starting competitor analysis...")
+    
