@@ -86,32 +86,32 @@ if st.session_state.analysis_data:
     st.write(f"**Threat Assessment:** {strategic.get('threat_assessment', 'Not provided')}")
     st.write(f"**Market Size Insights:** {strategic.get('market_size_insights', 'Not provided')}")
     
-    # Action buttons
-    col1, col2 = st.columns(2)
+    # # Action buttons
+    # col1, col2 = st.columns(2)
     
-    with col1:
-        if st.button("📩 Download Report", type="primary", use_container_width=True):
-            pdf_buffer = create_pdf_report(json.dumps(analysis_data), st.session_state.industry, st.session_state.product_summary)
-            st.download_button(
-                label="Download PDF Report",
-                data=pdf_buffer,
-                file_name="competitor_analysis_report.pdf",
-                mime="application/pdf"
-            )
+    # with col1:
+    if st.button("📩 Download Report", type="primary", use_container_width=True):
+        pdf_buffer = create_pdf_report(json.dumps(analysis_data), st.session_state.industry, st.session_state.product_summary)
+        st.download_button(
+            label="Download PDF Report",
+            data=pdf_buffer,
+            file_name="competitor_analysis_report.pdf",
+            mime="application/pdf"
+        )
     
-    with col2:
-        st.write("**Send Report via Email**")
-        email_col1, email_col2 = st.columns([3, 1])
-        
-        with email_col1:
-            recipient_email = st.text_input("Enter recipient email:", key="email_input")
-        
-        with email_col2:
-            st.write("")
-            if st.button("🚀", help="Send Email", disabled=not recipient_email):
-                try:
-                    pdf_buffer = create_pdf_report(json.dumps(analysis_data), st.session_state.industry, st.session_state.product_summary)
-                    send_email_with_pdf(pdf_buffer, recipient_email, st.session_state.industry)
-                    st.success("Email sent successfully!")
-                except Exception as e:
-                    st.error(f"Failed to send email: {e}")
+    # with col2:
+    st.write("**Send Report via Email**")
+    email_col1, email_col2 = st.columns([3, 1])
+    
+    with email_col1:
+        recipient_email = st.text_input("Enter recipient email:", key="email_input")
+    
+    with email_col2:
+        st.write("")
+        if st.button("🚀", help="Send Email", disabled=not recipient_email):
+            try:
+                pdf_buffer = create_pdf_report(json.dumps(analysis_data), st.session_state.industry, st.session_state.product_summary)
+                send_email_with_pdf(pdf_buffer, recipient_email, st.session_state.industry)
+                st.success("Email sent successfully!")
+            except Exception as e:
+                st.error(f"Failed to send email: {e}")

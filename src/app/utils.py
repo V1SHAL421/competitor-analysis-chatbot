@@ -2,7 +2,7 @@ import logging
 import os
 from langchain_core.tools import tool
 from models import CompetitorSummary, StrategicAnalysis, AgentResponse
-from constants import llm_fast, llm_smart
+from constants import llm_smart
 from tavily import TavilyClient
 from firecrawl import Firecrawl
 from typing import List, Dict
@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 @tool
-def analyse_competitors(industry: str, product_summary: str) -> str:
+def search_competitors(industry: str, product_summary: str) -> List[str]:
     """Analyse competitors for a given industry and product summary.
     
     Args:
@@ -48,21 +48,56 @@ def analyse_competitors(industry: str, product_summary: str) -> str:
         # Extract URLs from search results
         competitor_urls = [result['url'] for result in response['results'][:3]]
         logger.info(f"Found competitor URLs: {competitor_urls}")
-        
-        # Scrape competitor websites
-        firecrawl = Firecrawl(api_key=os.getenv("FIRECRAWL_API_KEY"))
-        competitor_data = []
-        
-        for url in competitor_urls:
-            try:
-                doc = firecrawl.scrape(url, formats=["markdown"])
-                content = doc.markdown[:1000] if hasattr(doc, 'markdown') else ''
-                competitor_data.append({
-                    'url': url,
-                    'content': content
-                })
-            except Exception as e:
-                logger.warning(f"Failed to scrape {url}: {e}")
+        return competitor_urls
+
+    except Exception as e:
+        logger.error(f"Failed to search competitors: {e}")
+        return f"Failed to search competitors: {str(e)}"
+    
+@tool
+def scrape_competitor_sites(competitor_urls: List[str]) -> List[str]:
+    """Scrape competitor websites for content.
+
+    Args:
+        competitor_urls: List of competitor URLs
+
+    Returns:
+        Scraped content from competitor websites
+    """
+    logger.info("Scraping competitor websites")
+    # Scrape competitor websites
+    firecrawl = Firecrawl(api_key=os.getenv("FIRECRAWL_API_KEY"))
+    competitor_data = []
+    
+    for url in competitor_urls:
+        try:
+            doc = firecrawl.scrape(url, formats=["markdown"])
+            content = doc.markdown[:1000] if hasattr(doc, 'markdown') else ''
+            competitor_data.append({
+                'url': url,
+                'content': content
+            })
+        except Exception as e:
+            logger.warning(f"Failed to scrape {url}: {e}")
+    
+    return competitor_data
+
+@tool
+def analyse_competitors(industry: str, product_summary: str, competitor_data: List[Dict]) -> str:
+    """Analyse competitors based on scraped content.
+
+    Args:
+        industry: The industry or category (e.g., 'AI coding assistants')
+        product_summary: Brief description of the product (max 300 chars)
+        competitor_data: List of competitor URLs and its respective content
+
+    Returns:
+        Analysis results of competitors
+    """
+    try:
+        logger.info(f"Analysing competitors for industry: {industry}")
+        logger.info(f"Product summary: {product_summary}")
+        logger.info(f"Competitor data: {competitor_data}")
         
         analysis_prompt = create_prompt(industry, product_summary, competitor_data)
         
@@ -256,7 +291,7 @@ def send_email_with_pdf(pdf_buffer: BytesIO, recipient_email: str, industry: str
             server.starttls()
             server.login(os.getenv("EMAIL_SENDER"), os.getenv("EMAIL_PASSWORD"))
             server.send_message(message)
-            
+
         logger.info(f"Email sent to {recipient_email}")
 
     except Exception as e:
