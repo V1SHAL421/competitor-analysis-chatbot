@@ -14,7 +14,6 @@ class CompetitorSummary(BaseModel):
     unique_value_proposition: str
     technology_stack: List[str]
     market_position: str
-    next_steps: List[str]
 
 class StrategicAnalysis(BaseModel):
     """Strategic analysis of startup vs competing startups"""
@@ -26,6 +25,7 @@ class StrategicAnalysis(BaseModel):
     go_to_market_strategy: str
     threat_assessment: str
     market_size_insights: str
+    next_steps: List[str]
 
 class AgentResponse(BaseModel):
     """Response model for the agent"""
