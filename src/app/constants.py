@@ -1,12 +1,16 @@
 import os
+from functools import lru_cache
 from langchain_groq import ChatGroq
 
-llm_smart = ChatGroq(
-    model_name="llama-3.3-70b-versatile",
-    temperature=0.2,
-    max_tokens=4096,
-    api_key=os.getenv("GROQ_API_KEY")
-)
+
+@lru_cache(maxsize=1)
+def get_llm() -> ChatGroq:
+    return ChatGroq(
+        model_name="llama-3.3-70b-versatile",
+        temperature=0.2,
+        max_tokens=4096,
+        api_key=os.getenv("GROQ_API_KEY"),
+    )
 
 categories = [
     "AI coding assistants",
