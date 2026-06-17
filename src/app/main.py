@@ -1,9 +1,12 @@
 import streamlit as st
 import pandas as pd
 import json
+from dotenv import load_dotenv
+load_dotenv()
 from constants import categories
-from agent import run_competitor_analysis
-from utils import create_pdf_report, send_email_with_pdf
+from agent import run_competitor_analysis, stream_competitor_analysis
+from pdf import create_pdf_report
+from email_sender import send_email_with_pdf
 
 st.title("Competitor Analyser")
 
@@ -37,8 +40,20 @@ if st.button(
     use_container_width=True,
     disabled=not (industry and product_summary and len(product_summary.strip()) > 0)
 ):
-    st.success("Starting competitor analysis...")
-    result = run_competitor_analysis(industry, product_summary)
+    result = ""
+    with st.status("Running competitor analysis...", expanded=True) as status:
+        for kind, label, detail in stream_competitor_analysis(industry, product_summary):
+            if kind == "step":
+                st.write(label)
+                if detail:
+                    st.caption(detail)
+            elif kind == "tool_result":
+                st.write(label)
+                if detail:
+                    st.caption(detail)
+            elif kind == "result":
+                result = label
+                status.update(label="✅ Analysis complete!", state="complete", expanded=False)
     
     try:
         analysis_data = json.loads(result)
